@@ -4,12 +4,13 @@ const bodyParser = require('body-parser');
 const config = require('./config/dev');
 
 const rentalRoutes = require('./routes/rentals');
+const usersRoutes = require('./routes/users');
 
 // models
-const Rental = require('./models/rental');
+require('./models/rental');
+require('./models/user');
 
 const app = express();
-
 const PORT = process.env.PORT || 3001;
 
 // DBB
@@ -18,6 +19,7 @@ mongoose.connect(
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useCreateIndex: true,
   },
   () => {
     console.log('Connected to Atlas DBB');
@@ -28,6 +30,7 @@ mongoose.connect(
 app.use(bodyParser.json());
 // API Routes
 app.use('/api/v1/rentals', rentalRoutes);
+app.use('/api/v1/users', usersRoutes);
 
 app.listen(PORT, () => {
   console.log('Server listening on port: ' + PORT);
