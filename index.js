@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const config = require('./config/dev');
 
+// Errors from dbb
+const { provideMongoErrorHandler } = require('./middlewares');
+
 // routes
 const rentalRoutes = require('./routes/rentals');
 const usersRoutes = require('./routes/users');
@@ -32,6 +35,7 @@ mongoose.connect(
 
 // MIDDLEWARE
 app.use(bodyParser.json());
+app.use(provideMongoErrorHandler);
 
 // Secret Route
 app.get('/api/v1/secret', onlyAuthUser, (req, res) => {

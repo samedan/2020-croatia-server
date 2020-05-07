@@ -12,6 +12,7 @@ mongoose.connect(
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useCreateIndex: true,
   },
   async () => {
     const fakeDB = new FakeDB();
