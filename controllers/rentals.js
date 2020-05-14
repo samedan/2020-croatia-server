@@ -1,71 +1,56 @@
+
 const Rental = require('../models/rental');
 
 exports.getRentals = (req, res) => {
   Rental.find({}, (error, foundRentals) => {
-    // if (error) {
-    //   return Rental.sendError(res, {
-    //     status: 422,
-    //     detail: 'Cannot retrieve rental data!',
-    //   });
-    // }
-    if (error) {
-      return res.mongoError(error);
-    }
+    if (error) { return res.mongoError(error); }
+
     return res.json(foundRentals);
-  });
-};
+  })
+}
 
 exports.getRentalById = (req, res) => {
   const { rentalId } = req.params;
-
+  
   Rental.findById(rentalId, (error, foundRental) => {
-    // if (error) {
-    //   return Rental.sendError(res, {
-    //     status: 422,
-    //     detail: 'Cannot retrieve rental data!',
-    //   });
-    // }
-    if (error) {
-      return res.mongoError(error);
-    }
-    return res.json(foundRental);
-  });
-};
+    if (error) { return res.mongoError(error); }
+
+    return res.json(foundRental)
+  })
+}
 
 exports.createRental = (req, res) => {
   const rentalData = req.body;
   rentalData.owner = res.locals.user;
 
   Rental.create(rentalData, (error, createdRental) => {
-    // if (error) {
-    //   return Rental.sendError(res, {
-    //     status: 422,
-    //     detail: 'Cannot add rental data!',
-    //   });
-    // }
-    if (error) {
-      return res.mongoError(error);
-    }
-    // return res.json({
-    //   message: `Rental with id: ${createdRental._id} was added!`,
-    // });
+    if (error) { return res.mongoError(error); }
+
     return res.json(createdRental);
-  });
-};
+  })
+}
 
-// exports.deleteRental = (req, res) => {
-//   const { id } = req.params;
-//   const rentalIndex = rentals.findIndex((r) => r._id === id);
-//   rentals.splice(rentalIndex, 1);
-//   return res.json({ message: `Rental with id: ${id} was removed` });
-// };
 
-// exports.updateRental = (req, res) => {
-//   const { id } = req.params;
-//   const rentalToUpdate = req.body;
-//   const rentalIndex = rentals.findIndex((r) => r._id === id);
-//   rentals[rentalIndex].city = rentalToUpdate.city;
-//   rentals[rentalIndex].title = rentalToUpdate.title;
 
-//   return res.json({ message: `Rental with id: ${id} was Updated` });
-// };
+// middlewares
+
+exports.isUserRentalOwner = (req, res, next) => {
+  const { rental } = req.body;
+  const user = res.locals.user;
+
+  Rental
+    .findById(rental)
+    .populate('owner')
+    .exec((error, foundRental) => {
+      if (error) { return res.mongoError(error); }
+
+      if (foundRental.owner.id === user.id) {
+        return res
+          .sendApiError(
+            { title: 'Invalid User', 
+              detail: 'Cannot create booking on your rental'});
+      }
+
+      next();
+    })
+}

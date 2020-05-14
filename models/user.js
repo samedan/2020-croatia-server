@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const Schema = mongoose.Schema;
@@ -5,47 +6,39 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   username: {
     type: String,
-    minlength: [4, 'Invalid length. Minimum is 4 characters'],
-    maxlength: [32, 'Invalid length. Maximum is 32 characters'],
+    minlength: [4, 'Invalid length! Minimum is 4 characters'],
+    maxlength: [32, 'Invalid length! Maximum is 32 characters'],
   },
   email: {
     type: String,
-    minlength: [4, 'Invalid length. Minimum is 4 characters'],
-    maxlength: [32, 'Invalid length. Maximum is 32 characters'],
+    minlength: [4, 'Invalid length! Minimum is 4 characters'],
+    maxlength: [32, 'Invalid length! Maximum is 32 characters'],
     unique: true,
     lowercase: true,
-    required: 'Email is required',
-    match: [
-      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-    ],
+    required: 'Email is required!',
+    match: [/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/]
   },
   password: {
     type: String,
-    minlength: [6, 'Invalid length. Minimum is 4 characters'],
-    maxlength: [32, 'Invalid length. Maximum is 32 characters'],
-    required: 'Password is required',
-  },
-});
+    minlength: [4, 'Invalid length! Minimum is 4 characters'],
+    maxlength: [32, 'Invalid length! Maximum is 32 characters'],
+    required: 'Password is required!'
+  }
+})
 
-userSchema.methods.hasSamePassword = function (providedPassword) {
-  // 'this' = current user
-  return bcrypt.compareSync(providedPassword, this.password);
-};
+userSchema.methods.hasSamePassword = function(providedPassword) {
+  return bcrypt.compareSync(providedPassword, this.password)
+}
 
-// whenever save data
-userSchema.pre('save', function (next) {
-  // 'this' = user data we want to save
+userSchema.pre('save', function(next) {
   const user = this;
 
-  // console.log(user.password);
   bcrypt.genSalt(10, (err, salt) => {
-    // console.log(salt);
-    bcrypt.hash(user.password, salt, (err, hashPassword) => {
-      // console.log(hashPassword);
-      user.password = hashPassword;
-      next(); // save to DBB
-    });
-  });
-});
+    bcrypt.hash(user.password, salt, (err, hash) => {
+      user.password = hash;
+      next();
+    })
+  })
+})
 
 module.exports = mongoose.model('User', userSchema);
