@@ -12,6 +12,7 @@ const { onlyAuthUser } = require('../controllers/users');
 
 // /api/v1/bookings?rental="8772392sad79das8d"
 router.get('', getBookings);
+// /api/v1/bookings/received"
 router.get('/received', onlyAuthUser, getReceivedBookings);
 router.get('/me', onlyAuthUser, getUserBookings);
 router.post('', onlyAuthUser, isUserRentalOwner, createBooking);

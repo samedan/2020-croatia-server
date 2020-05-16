@@ -1,13 +1,28 @@
 const Rental = require('../models/rental');
+const Booking = require('../models/booking');
 
-exports.getRentals = (req, res) => {
-  Rental.find({}, (error, foundRentals) => {
-    if (error) {
-      return res.mongoError(error);
-    }
+exports.getRentals = async (req, res) => {
+  // desctructurize query parameteres
+  const { city } = req.query;
+  const query = city ? { city: city.toLowerCase() } : {};
 
-    return res.json(foundRentals);
-  });
+  try {
+    const rentals = await Rental.find(query);
+    return res.json(rentals);
+  } catch (error) {
+    return res.mongoError(error);
+  }
+};
+
+// GET rentals ME
+exports.getUserRentals = async (req, res) => {
+  const { user } = res.locals;
+  try {
+    const rentals = await Rental.find({ owner: user });
+    return res.json(rentals);
+  } catch (error) {
+    return res.mongoError(error);
+  }
 };
 
 exports.getRentalById = async (req, res) => {
@@ -34,6 +49,31 @@ exports.createRental = (req, res) => {
 
     return res.json(createdRental);
   });
+};
+
+exports.deleteRental = async (req, res) => {
+  const { rentalId } = req.params;
+  const { user } = res.locals;
+  try {
+    const rental = await Rental.findById(rentalId).populate('owner');
+    const bookings = await Booking.find({ rental });
+    if (user.id !== rental.owner.id) {
+      return res.sendApiError({
+        title: 'Invalid User',
+        detail: 'You are not owner of this rental!',
+      });
+    }
+    if (bookings && bookings.length > 0) {
+      return res.sendApiError({
+        title: 'Active bookings on this property',
+        detail: 'Cannot delete rental with active booking!',
+      });
+    }
+    await rental.remove();
+    return res.json({ id: rentalId });
+  } catch (error) {
+    return res.mongoError(error);
+  }
 };
 
 // middlewares

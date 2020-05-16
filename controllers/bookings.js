@@ -14,16 +14,21 @@ exports.getBookings = async (req, res) => {
   }
 };
 
-('/api/v1/bookings/received');
+// Get Bookings on my property
+// ('/api/v1/bookings/received');
 exports.getReceivedBookings = async (req, res) => {
   const { user } = res.locals;
-
   try {
+    // rentals that th eowner is owning
     const rentals = await Rental.find({ owner: user }, '_id');
+    // get rentalIds = [id1, id2]
     const rentalIds = rentals.map((r) => r.id);
-    const bookings = await Booking.find({ rental: { $in: rentalIds } })
+    const bookings = await Booking
+      // find all 'rental' that have included ($in) the 'rentalId'
+      .find({ rental: { $in: rentalIds } })
       .populate('user', '-password')
       .populate('rental');
+    // return bookings made on my properties
     return res.json(bookings);
   } catch (error) {
     return res.mongoError(error);
